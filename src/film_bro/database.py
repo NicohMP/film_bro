@@ -1,0 +1,21 @@
+import sqlite3
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_DB_PATH = PROJECT_ROOT / "data" / "film_bro.db"
+SCHEMA_PATH = Path(__file__).with_name("schema.sql")
+
+
+def connect(database_path: str | Path = DEFAULT_DB_PATH) -> sqlite3.Connection:
+    database_path = Path(database_path)
+    database_path.parent.mkdir(parents=True, exist_ok=True)
+
+    connection = sqlite3.connect(database_path)
+    connection.row_factory = sqlite3.Row
+    connection.execute("PRAGMA foreign_keys = ON")
+    return connection
+
+
+def initialize_database(connection: sqlite3.Connection) -> None:
+    schema_sql = SCHEMA_PATH.read_text(encoding="utf-8")
+    connection.executescript(schema_sql)
